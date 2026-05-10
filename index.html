@@ -1083,7 +1083,7 @@
             else if (hour >= 17) timeGreeting = "Good Evening";
             
             const greetingEl = document.getElementById('greetingDisplay');
-            if (greetingEl) greetingEl.textContent = `${timeGreeting}, Rajveer`;
+            if (greetingEl) greetingEl.textContent = `${timeGreeting}`;
         };
         setInterval(updateGreeting, 60000);
         updateGreeting();
