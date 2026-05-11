@@ -65,6 +65,32 @@
             transition: background-color 0.6s cubic-bezier(0.22, 1, 0.36, 1), color 0.6s ease;
         }
 
+        /* --- PRELOADER STYLES START --- */
+        #global-loader {
+            position: fixed;
+            inset: 0;
+            background-color: var(--bg-color);
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--glass-border);
+            border-radius: 50%;
+            border-top-color: var(--text-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+        /* --- PRELOADER STYLES END --- */
+
         #nebula-canvas {
             position: fixed;
             top: 0;
@@ -426,8 +452,15 @@
             border-radius: 14px;
             z-index: 4;
             filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
+            /* Changed transition to handle opacity for smooth loading */
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
             transform: translateZ(20px);
+        }
+
+        /* Class added via JS when image fully loads */
+        .app-icon.loaded {
+            opacity: 1;
         }
 
         body.light-mode .app-icon {
@@ -491,6 +524,7 @@
             display: none; 
             text-shadow: 0 4px 10px rgba(0,0,0,0.4);
             transform: translateZ(20px);
+            position: absolute;
         }
 
         .modal-overlay {
@@ -690,6 +724,11 @@
 </head>
 <body>
 
+    <!-- Global Preloader Added Here -->
+    <div id="global-loader">
+        <div class="spinner"></div>
+    </div>
+
     <canvas id="nebula-canvas"></canvas>
     <div class="warp-overlay" id="warpOverlay"></div>
 
@@ -752,6 +791,15 @@
     </div>
 
     <script>
+        // --- Preloader Script ---
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('global-loader');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.visibility = 'hidden';
+            }, 600); // Wait for transition to complete
+        });
+
         const apps = [
             { id: 1, name: "myntra", category: "Fashion, Hoodies, Sneakers, T-Shirts, Jeans", icon: "myntra", link: "https://www.myntra.com/", pinned: false },
             { id: 2, name: "snitch", category: "Sneakers, Hoodies, T-Shirts, Jeans", icon: "snitch", link: "https://www.snitch.com/", pinned: false },
@@ -986,7 +1034,16 @@
                 const appName = app.name;
                 const topCategory = app.category.split(',')[0].trim();
                 
-                const imgContent = `<img src="images/${app.icon}.png" data-ext-index="0" class="app-icon" onerror="handleImageError(this, '${app.icon}')" alt="${appName} logo">
+                // --- Image Tag Modified with Lazy Loading & Load Event ---
+                const imgContent = `<img 
+                                        src="images/${app.icon}.png" 
+                                        data-ext-index="0" 
+                                        class="app-icon" 
+                                        loading="lazy"
+                                        decoding="async"
+                                        onload="this.classList.add('loaded')"
+                                        onerror="handleImageError(this, '${app.icon}')" 
+                                        alt="${appName} logo">
                                     <div class="fallback">${appName.substring(0,2).toUpperCase()}</div>`;
 
                 card.innerHTML = `
